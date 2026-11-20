@@ -25,6 +25,7 @@ USAGE = """divo-sys {version}
   demo                try the panel without a speaker (a pretend one on port 47833)
   face <mood>         show a face
   text <message>      scroll a message
+  bright <0-100>      set the screen brightness
   status              what is connected and showing
   hook                for Claude Code hooks (reads the event on stdin)
   mcp                 the MCP server (stdio)
@@ -150,11 +151,23 @@ def main(argv):
             return 1
         webbrowser.open(f"http://{HOST}:{PORT}/")
     elif cmd == "face" and rest:
+        from . import faces
+        if rest[0] not in faces.MOODS:
+            print(f"unknown mood {rest[0]!r}. Available: {', '.join(faces.MOODS)}")
+            return 1
         from .client import send
         print(send({"cmd": "face", "mood": rest[0]}, "mcp"))
     elif cmd == "text" and rest:
         from .client import send
         print(send({"cmd": "text", "text": " ".join(rest)}, "mcp"))
+    elif cmd == "bright" and rest:
+        from .client import send, admin_token
+        try:
+            value = int(rest[0])
+        except ValueError:
+            print("usage: bright <0-100>")
+            return 1
+        print(json.dumps(send({"cmd": "brightness", "value": value}, "gui", token=admin_token())))
     elif cmd == "status":
         from .client import get
         s = get("/api/state?peek=1")

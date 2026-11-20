@@ -176,6 +176,28 @@ class CommandLine(unittest.TestCase):
             code = cli.main(list(args))
         return code, out.getvalue()
 
+    def test_bright_sends_the_cli_source(self):
+        calls = []
+
+        def fake_send(req, source="mcp", token=None):
+            calls.append((req, source, token))
+            return {"ok": True}
+
+        with mock.patch("divosys.client.send", fake_send), mock.patch("divosys.client.admin_token", lambda: "T"):
+            code, out = self.run_cli("bright", "40")
+        self.assertEqual(code, 0)
+        self.assertEqual(calls, [({"cmd": "brightness", "value": 40}, "gui", "T")])
+
+    def test_bright_rejects_nonsense(self):
+        self.assertEqual(self.run_cli("bright", "lots")[0], 1)
+        self.assertEqual(self.run_cli("bright")[0], 1)
+
+    def test_face_lists_moods_when_unknown(self):
+        code, out = self.run_cli("face", "no-such-mood")
+        self.assertEqual(code, 1)
+        self.assertIn("Available:", out)
+        self.assertIn("idle", out)
+
     def test_version_and_usage(self):
         from divosys import __version__
         self.assertEqual(self.run_cli("version"), (0, __version__ + "\n"))

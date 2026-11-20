@@ -48,11 +48,12 @@ def ensure_daemon(wait=8.0):
     return False
 
 
-def send(req, source="mcp"):
-    """Returns the daemon's reply. Raises ConnectionError if it can't be reached or started."""
+def send(req, source="mcp", token=None):
+    """Returns the daemon's reply. Raises ConnectionError if it can't be reached or started.
+    Pass `token` for sources the panel guards, like "gui"."""
     if not ensure_daemon():
         raise ConnectionError("could not start the divo-sys daemon")
-    return _request("POST", "/api/cmd", {"req": req, "source": source})
+    return _request("POST", "/api/cmd", {"req": req, "source": source}, token=token)
 
 
 def get(path):

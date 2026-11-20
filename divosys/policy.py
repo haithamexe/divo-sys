@@ -30,6 +30,8 @@ def describe(req):
         return f"text · {str(req.get('text'))[:20]}"
     if cmd == "mode":
         return f"mode · {req.get('mode')}"
+    if cmd == "brightness":
+        return f"brightness · {req.get('value')}%"
     return str(cmd)
 
 
